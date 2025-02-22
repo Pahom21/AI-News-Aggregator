@@ -15,10 +15,14 @@ def categorize_article(article):
 summarizer = pipeline("summarization", model="sshleifer/distilbart-cnn-12-6")
 
 def summarize_article(article):
-    """Summarizes a news article using a pre-trained transformer model"""
-    summary = summarizer(article, max_length=10, min_length=3, do_sample=False)
-    return summary[0]['summary_text']
+    """Summarizes a news article dynamically based on its length."""
+    # Calculate max_length as 30% of the input length, but at least 50 tokens
+    max_length = max(50, int(len(article.split()) * 0.3))
+    min_length = max(20, int(len(article.split()) * 0.1))
 
+    # Generate the summary dynamically
+    summary = summarizer(article, max_length=max_length, min_length=min_length, do_sample=False)
+    return summary[0]['summary_text']
 
 # === Sentiment Analysis ===
 sentiment_analyzer = pipeline("sentiment-analysis", model="distilbert-base-uncased-finetuned-sst-2-english")

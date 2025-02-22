@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="author" content="Elvis Makara, Caldwell Wachira, Ryan Nduati, Dennis Mwangi">
+    <title>AI News Aggregator</title>
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+</head>
+<body class="bg-gray-50 min-h-screen">
+    <nav class="bg-white shadow-lg">
+        <div class="container mx-auto px-4 py-6">
+            <h1 class="text-4xl font-bold text-gray-800">AI News Aggregator</h1>
+            <p class="text-gray-600 mt-2">Intelligent news curation powered by AI</p>
+        </div>
+    </nav>
+
+    <main class="container mx-auto px-4 py-8">
+        <!-- Filters Section -->
+        <div class="bg-white rounded-xl shadow-sm p-6 mb-8">
+            <!-- Filter by Source -->
+            <div class="mb-6">
+                <h2 class="text-lg font-semibold mb-3 text-gray-700 flex items-center">
+                    <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 20H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v12a2 2 0 01-2 2z"></path>
+                    </svg>
+                    News Sources
+                </h2>
+                <div class="flex flex-wrap gap-2">
+                    <a href="/?source=all&category={{ category }}&sentiment={{ sentiment }}"
+                       data-filter="source:all"
+                       class="filter-link text-sm font-medium px-4 py-2 rounded-full transition-colors duration-200">
+                        All Sources
+                    </a>
+                    {% for src in available_sources %}
+                    <a href="/?source={{ src }}&category={{ category }}&sentiment={{ sentiment }}"
+                       data-filter="source:{{ src }}"
+                       class="filter-link text-sm font-medium px-4 py-2 rounded-full transition-colors duration-200">
+                        {{ src }}
+                    </a>
+                    {% endfor %}
+                </div>
+            </div>
+
+            <!-- Filter by Category -->
+            <div class="mb-6">
+                <h2 class="text-lg font-semibold mb-3 text-gray-700 flex items-center">
+                    <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z"></path>
+                    </svg>
+                    Categories
+                </h2>
+                <div class="flex flex-wrap gap-2">
+                    <a href="/?source={{ source }}&category=all&sentiment={{ sentiment }}"
+                       data-filter="category:all"
+                       class="filter-link text-sm font-medium px-4 py-2 rounded-full transition-colors duration-200">
+                        All Categories
+                    </a>
+                    {% for cat in available_categories %}
+                    <a href="/?source={{ source }}&category={{ cat }}&sentiment={{ sentiment }}"
+                       data-filter="category:{{ cat }}"
+                       class="filter-link text-sm font-medium px-4 py-2 rounded-full transition-colors duration-200">
+                        {{ cat }}
+                    </a>
+                    {% endfor %}
+                </div>
+            </div>
+
+            <!-- Filter by Sentiment -->
+            <div>
+                <h2 class="text-lg font-semibold mb-3 text-gray-700 flex items-center">
+                    <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14.828 14.828a4 4 0 01-5.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                    </svg>
+                    Sentiment
+                </h2>
+                <div class="flex flex-wrap gap-2">
+                    <a href="/?source={{ source }}&category={{ category }}&sentiment=all"
+                       data-filter="sentiment:all"
+                       class="filter-link text-sm font-medium px-4 py-2 rounded-full transition-colors duration-200">
+                        All Sentiments
+                    </a>
+                    {% for sent in available_sentiments %}
+                    <a href="/?source={{ source }}&category={{ category }}&sentiment={{ sent }}"
+                       data-filter="sentiment:{{ sent }}"
+                       class="filter-link text-sm font-medium px-4 py-2 rounded-full transition-colors duration-200">
+                        {{ sent }}
+                    </a>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+
+        <!-- News Grid -->
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {% for article in articles %}
+            <article class="bg-white rounded-xl shadow-sm overflow-hidden hover:shadow-md transition-shadow duration-200">
+                <div class="p-6">
+                    <div class="flex flex-wrap gap-2 mb-4">
+                        <span class="text-xs font-medium bg-blue-100 text-blue-800 px-3 py-1 rounded-full">{{ article.source }}</span>
+                        <span class="text-xs font-medium bg-purple-100 text-purple-800 px-3 py-1 rounded-full">{{ article.category }}</span>
+                        {% if article.sentiment == 'POSITIVE' %}
+                            <span class="text-xs font-medium bg-green-100 text-green-800 px-3 py-1 rounded-full">Positive</span>
+                        {% elif article.sentiment == 'NEUTRAL' %}
+                            <span class="text-xs font-medium bg-yellow-100 text-yellow-800 px-3 py-1 rounded-full">Neutral</span>
+                        {% else %}
+                            <span class="text-xs font-medium bg-red-100 text-red-800 px-3 py-1 rounded-full">Negative</span>
+                        {% endif %}
+                    </div>
+                    <h2 class="text-xl font-semibold mb-3 text-gray-800 line-clamp-2">
+                        <a href="{{ article.link }}" class="hover:text-blue-600 transition-colors duration-200" target="_blank">
+                            {{ article.title }}
+                        </a>
+                    </h2>
+                    <p class="text-gray-600 text-sm line-clamp-3">{{ article.content }}</p>
+                    <a href="{{ article.link }}" target="_blank" class="inline-block mt-4 text-sm text-blue-600 hover:text-blue-800 font-medium">Read more →</a>
+                </div>
+            </article>
+            {% endfor %}
+        </div>
+    </main>
+
+    <footer class="bg-white border-t mt-12">
+        <div class="container mx-auto px-4 py-6">
+            <p class="text-center text-gray-600 text-sm">© 2025 AI News Aggregator. All rights reserved.</p>
+        </div>
+    </footer>
+
+    <script>
+        // Enhanced filter highlighting
+        const urlParams = new URLSearchParams(window.location.search);
+        const currentSource = urlParams.get('source') || 'all';
+        const currentCategory = urlParams.get('category') || 'all';
+        const currentSentiment = urlParams.get('sentiment') || 'all';
+
+        document.querySelectorAll('.filter-link').forEach(link => {
+            const [filterType, filterValue] = link.dataset.filter.split(':');
+            link.classList.add('bg-gray-100', 'text-gray-600', 'hover:bg-gray-200');
+
+            if ((filterType === 'source' && filterValue === currentSource) ||
+                (filterType === 'category' && filterValue === currentCategory) ||
+                (filterType === 'sentiment' && filterValue === currentSentiment)) {
+                link.classList.remove('bg-gray-100', 'text-gray-600', 'hover:bg-gray-200');
+                link.classList.add('bg-blue-600', 'text-white', 'hover:bg-blue-700');
+            }
+        });
+    </script>
+</body>
+</html>

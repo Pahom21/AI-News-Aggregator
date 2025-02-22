@@ -4,7 +4,7 @@ from backend.app.config.database import NewsDatabase  # Import database
 from backend.app.models.nlp_model import categorize_article, summarize_article, analyze_sentiment  # Import AI models
 
 # Configure logging
-logging.basicConfig(level=logging.INFO, format="%(asctime)s - %(levelname)s - %(message)s")
+logging.basicConfig(level=logging. INFO, format="%(asctime)s - %(levelname)s - %(message)s")
 
 class NewsAPIClient:
     API_KEY = "c086f5ef32fd4fe9b3830a78a0266281"  # Replace with your actual NewsAPI key
@@ -13,8 +13,20 @@ class NewsAPIClient:
     def __init__(self):
         self.db = NewsDatabase()  # Initialize database connection
 
-    def fetch_articles(self, sources):
-        """Fetch news articles from NewsAPI and process them with AI."""
+    def fetch_articles(self, sources, force_refresh=False):
+        """
+        Fetch news articles from NewsAPI and process them with AI.
+        If force_refresh is False, return existing articles from DB.
+        """
+        if not force_refresh:
+            # Check if we have articles in the database first
+            existing_articles = self.db.get_filtered_articles()
+            if existing_articles:
+                logging.info("Returning existing articles from database")
+                return existing_articles
+        else:
+            # Reinitialize the database by clearing old articles
+            self.db.clear_articles()
         articles = []
 
         for source in sources:
@@ -22,7 +34,7 @@ class NewsAPIClient:
             params = {
                 "sources": source,
                 "apiKey": self.API_KEY,
-                "pageSize": 10,  # Limit number of articles
+                "pageSize": 5,  # Limit number of articles
                 "language": "en"
             }
 
@@ -61,12 +73,48 @@ class NewsAPIClient:
 
         return articles
 
+    def get_articles(self, source=None, category=None, sentiment=None):
+        """Get filtered articles from the database."""
+        articles = self.db.get_filtered_articles(source, category, sentiment)
+        if not articles:
+            logging.info("No articles found with current filters, fetching fresh articles")
+            sources = [source] if source and source != 'all' else self.get_available_sources()
+            articles = self.fetch_articles(sources, force_refresh=True)
+        return articles
+
+    def get_available_sources(self):
+        """Get list of available news sources."""
+        return ["bbc-news", "cnn", "al-jazeera-english"]
+
+    def get_available_categories(self):
+        """Get list of available categories."""
+        return ["Technology", "Sports", "Politics", "Business",
+                "Health", "Entertainment"]
+
+    def get_available_sentiments(self):
+        """Get list of available sentiment values."""
+        return ["POSITIVE", "NEGATIVE", "NEUTRAL"]
+
+
 # Example usage
 if __name__ == "__main__":
     sources = ["bbc-news", "cnn", "al-jazeera-english"]  # Example sources
 
     client = NewsAPIClient()
-    news_articles = client.fetch_articles(sources)
+    news_articles = client.fetch_articles(sources, force_refresh=True)
 
+    print(f"Total articles fetched: {len(news_articles)}")
     for article in news_articles:
+        print(article)
+
+    # Now test filtering by a specific source, e.g., "cnn"
+    filtered_articles = client.get_articles(source="cnn")
+    print("\nFiltered Articles (source = cnn):")
+    for article in filtered_articles:
+        print(article)
+
+    # Now test filtering by specific sentiment
+    filtered_by_sentiment = client.get_articles(sentiment="NEGATIVE")
+    print("\nFiltered Articles (sentiment = NEGATIVE):")
+    for article in filtered_by_sentiment:
         print(article)
